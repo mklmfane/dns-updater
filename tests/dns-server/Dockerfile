@@ -1,17 +1,22 @@
-# Systemd container
-FROM jrei/systemd-fedora:latest
+FROM ubuntu:focal-20220113
 
-STOPSIGNAL SIGRTMIN+3
-USER root
-# Exposes TCP/UDP Ports on the container
-EXPOSE 53
+ENV BIND_USER=bind \
+    BIND_VERSION=9.16.1-0ubuntu2 \
+    DATA_DIR=/data
 
-# Install BIND packages
-RUN dnf -y install bind bind-utils && dnf clean all
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+      bind9=1:${BIND_VERSION}* bind9utils=1:${BIND_VERSION}* dnsutils\
+ && rm -rf /var/lib/apt/lists/*
 
-# Enable BIND service
-RUN systemctl enable named.service
+COPY entrypoint.sh /sbin/entrypoint.sh
 
-# Copy in default zone content
-COPY --chown=named:named db.* /var/named/dynamic/
-RUN chmod 644 /var/named/dynamic/db.*
+COPY create-key.sh /opt/create-key.sh
+
+RUN chmod 755 /sbin/entrypoint.sh /opt/create-key.sh
+
+EXPOSE 53/udp 53/tcp
+
+ENTRYPOINT ["/sbin/entrypoint.sh"]
+
+CMD ["/usr/sbin/named"]

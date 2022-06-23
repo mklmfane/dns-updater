@@ -34,26 +34,31 @@ _return_1() {
 IFS=$'\n\t'
 
 # POSIX way to get script's dir: https://stackoverflow.com/a/29834779/12156188
+
 SCRIPT_DIR="$(cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P)"
 CONTAINER_NAME="terraform-dns-ns-tests"
 CONTAINER_TAG="v1.0.0"
 EXAMPLE_DOMAIN="example.com"
 
 _log "Delete any running/paused Docker container to avoid overlapping"
-docker rm --force terraform-dns-ns-tests || _log "Container doesn't exist"
+#docker rm --force terraform-dns-ns-tests || _log "Container doesn't exist" >/dev/null
+#docker rm --force labbsr0x/dns-bind9 || _log "Container doesn't exist"  >/dev/null
+
 
 _log "Build Docker image to run terraform tests"
 docker build --tag ${CONTAINER_NAME}:${CONTAINER_TAG} ${SCRIPT_DIR}/dns-server
 
 _log "Run the Docker container with systemd enabled and attach to journald service to see the logs in real time"
 docker run -d --privileged --tmpfs /tmp --tmpfs /run \
-    -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
-    -v /etc/localtime:/etc/localtime:ro \
-    -v ${SCRIPT_DIR}/dns-server/named.conf.none:/etc/named.conf:ro \
-    -p 127.0.0.1:53:53 \
-    -p 127.0.0.1:53:53/udp \
-    --rm --name ${CONTAINER_NAME} --hostname ns.${EXAMPLE_DOMAIN} ${CONTAINER_NAME}:${CONTAINER_TAG}
+   -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
+   -v /etc/localtime:/etc/localtime:ro \
+   -v ${SCRIPT_DIR}/dns-server/named.conf.none:/etc/named.conf:ro \
+   --publish 127.0.0.1:54:53/tcp \
+   --publish 127.0.0.1:54:53/udp \
+   --rm --name ${CONTAINER_NAME} \
+   --hostname ns.${EXAMPLE_DOMAIN} ${CONTAINER_NAME}:${CONTAINER_TAG}
+
 
 _log "You can now attach a console to the recently created container by running the following command"
 echo
-echo "docker exec -it terraform-dns-ns-tests bash -c 'journalctl -f -u named.service'"
+echo "docker exec -it terraform-dns-ns-tests bash -c 'service named status'"
