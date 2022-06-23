@@ -1,0 +1,14 @@
+bind:
+  localhost:
+    domain: example.com
+    ip: "127.0.0.1"
+    name: ns
+    ttl: 300
+  
+
+cname:
+  read:
+    domain: "example.com"
+    name: "read"
+    cname: "www.example.com"
+    ttl: 300

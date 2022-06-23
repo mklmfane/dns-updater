@@ -37,8 +37,15 @@ terraform {
       source  = "hashicorp/dns"
       version = ">= 3.2.0"
     }
+  
+    local = {
+      source = "hashicorp/local"
+      version = "2.2.3"
+    }
   }
 }
+
+
 
 
 # ------------------------------------------
@@ -46,7 +53,13 @@ terraform {
 # ------------------------------------------
 
 locals {
-
+  names          = fileset("${path.module}/examples/exercise/input-json","*.json")
+  filename       = [ for i in local.names : 
+    {
+      content    = jsondecode(file("${path.module}/examples/exercise/input-json/${i}"))
+    }
+  ]   
+  jsonfile       = [ for i in local.names : jsondecode(file("${path.module}/examples/exercise/input-json/${i}")) ]  
 }
 
 
@@ -54,13 +67,31 @@ locals {
 # Write your Terraform resources here
 # ------------------------------------------
 
-resource "dns_a_record_set" "www" {
-  zone = "example.com."
-  name = "www"
-  addresses = [
-    "192.168.0.1",
-    "192.168.0.2",
-    "192.168.0.3",
-  ]
-  ttl = 300
+
+#resource "dns_a_record_set" "www" {
+#  zone = "example.com."
+#  name = "www"
+#  addresses = [
+#    "192.168.0.1",
+#    "192.168.0.2",
+#    "192.168.0.3",
+#  ]
+#  ttl = 300
+#}
+
+resource "dns_a_record_set" "example" {
+  zone      = local.filename[length(local.filename)-1].content.zone
+  name      = local.filename[length(local.filename)-1].content.dns_record_type
+  addresses = local.filename[length(local.filename)-1].content.addresses
+  ttl       = local.filename[length(local.filename)-1].content.ttl
+}
+
+
+resource "local_file" "newfile" {
+    content         = <<EOF
+      "toset(local.jsonfile)"
+    EOF
+    filename             = "${path.module}/examples/exercise/input-json/newfile.json"
+    file_permission      = "750"
+    directory_permission = "750"
 }
