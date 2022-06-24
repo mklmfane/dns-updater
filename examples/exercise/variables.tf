@@ -5,5 +5,5 @@
 variable "dns_server" {
   type        = string
   description = "(Required) IP or FQDN of the DNS server"
-  default     = "localhost"
+  default     = "172.17.0.2"
 }
