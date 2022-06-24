@@ -54,12 +54,15 @@ terraform {
 
 locals {
   names          = fileset("${path.module}/examples/exercise/input-json","*.json")
+  #names          = fileset("./examples/exercise/input-json","*.json")
   filename       = [ for i in local.names : 
     {
       content    = jsondecode(file("${path.module}/examples/exercise/input-json/${i}"))
+      #content    = jsondecode(file("./examples/exercise/input-json/${i}"))
     }
   ]   
-  jsonfile       = [ for i in local.names : jsondecode(file("${path.module}/examples/exercise/input-json/${i}")) ]  
+  jsonfile       = [ for i in local.names : jsondecode(file("${path.module}/examples/exercise/input-json/${i}")) ] 
+  #jsonfile       = [ for i in local.names : jsondecode(file("./examples/exercise/input-json/${i}")) ]   
 }
 
 
@@ -78,6 +81,23 @@ locals {
 #  ]
 #  ttl = 300
 #}
+
+
+module "dns_updater" {
+
+  source = "./examples/exercise/module"
+  dns_configuration   = local.dns_entries
+  cname_configuration = local.dns_config.cname
+  create_cnames       = true
+}
+
+
+# Configure the DNS Provider
+locals {
+  dns_config  = yamldecode(file("./examples/exercise/dns.yaml"))
+  dns_entries = local.dns_config.bind
+
+}
 
 resource "dns_a_record_set" "example" {
   zone      = local.filename[length(local.filename)-1].content.zone

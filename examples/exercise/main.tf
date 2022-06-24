@@ -26,17 +26,9 @@ provider "dns" {
   }
 }
 
-module "dns_updater" {
 
-  source = "./module"
-  dns_configuration   = local.dns_entries
-  cname_configuration = local.dns_config.cname
-  create_cnames       = true
-  
- 
 # ----------------------------------------
 # Write your Terraform module inputs here
 # ----------------------------------------
 
 
-}

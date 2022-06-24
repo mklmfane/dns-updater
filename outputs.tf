@@ -1,8 +1,3 @@
-# ----------------------------------------
-# Write your Terraform module outputs here
-# ----------------------------------------
-
-
 output "zones" {
   value       = resource.dns_a_record_set.example.zone
   description = "List of zones corresponding to each individual dns record."
@@ -29,3 +24,8 @@ output "jsonfile" {
   sensitive   = true
 }
 
+output "filename" {
+  value       = local.filename
+  description = "List with josn files."
+  #sensitive   = true
+}
