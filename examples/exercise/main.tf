@@ -28,7 +28,7 @@ provider "dns" {
 
 module "dns_updater" {
 
-  source = "kalenarndt/bind-dns-config/dns"
+  source = "./module"
   dns_configuration   = local.dns_entries
   cname_configuration = local.dns_config.cname
   create_cnames       = true

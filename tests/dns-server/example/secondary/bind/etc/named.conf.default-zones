@@ -15,7 +15,7 @@ zone "localhost" {
 zone "example.com" {  // Change to desired zone
 	type slave;
 	file "/etc/bind/db.example.com";	// Change to zone file path
-	masters {192.168.0.1;};				// Change to Primary DNS IP
+	masters {172.17.0.2;};				// Change to Primary DNS IP
 };
 
 
